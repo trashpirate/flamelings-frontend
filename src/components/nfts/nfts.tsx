@@ -15,13 +15,63 @@ interface NFTMeta {
   id: number;
 }
 
+async function getNFT(
+  chainId: string,
+  maxPerWallet: number,
+  address: `0x${string}`,
+) {
+  const response = await Moralis.EvmApi.nft.getWalletNFTs({
+    chain: chainId,
+    format: "decimal",
+    limit: maxPerWallet,
+    excludeSpam: false,
+    tokenAddresses: [NFT_CONTRACT],
+    mediaItems: false,
+    address: address as string,
+  });
+
+  const nfts = response.result;
+
+  let nftArray: NFTMeta[] = [];
+  const maxShow = maxPerWallet ? maxPerWallet : 10;
+  for (let index = 1; index <= maxShow; index++) {
+    const nft = nfts.at(-index);
+    if (nft != undefined) {
+      let imageURL: string = "/unrevealed.jpg";
+
+      const res = await fetch(
+        `https://bafybeic2a7jdsztni6jsnq2oarb3o5g7iuya5r4lcjfqi64rsucirdfobm.ipfs.nftstorage.link/${nft.tokenId}`,
+      );
+      const json = await res.json();
+      const [prefix, separator, url, color, name] = json.image.split("/");
+      imageURL = `https://bafybeiaf6ppnztlf3k5edqrgq3zae5ih2y6vhf255hekkqn6vjwazhq36q.ipfs.nftstorage.link/${color}/${name}`;
+
+      let iNft: NFTMeta = {
+        name: nft.name + " #" + nft.tokenId,
+        id: Number(nft.tokenId),
+        path: imageURL,
+      };
+      nftArray.push(iNft);
+    } else {
+      let iNft: NFTMeta = {
+        name: "Flameling #?",
+        id: index + 1100,
+        path: "/unrevealed.jpg",
+      };
+      nftArray.push(iNft);
+    }
+  }
+
+  return nftArray;
+}
+
 type Props = {};
 
 export default function Nfts({}: Props) {
-  const [totalSupply, setTotalSupply] = useState<number | undefined>(undefined);
   const [maxPerWallet, setMaxPerWallet] = useState<number | undefined>(
     undefined,
   );
+  const [nftBalance, setNftBalance] = useState<number | undefined>(undefined);
   const [nftsOwned, setNftsOwned] = useState<NFTMeta[] | null>(null);
 
   // get account address
@@ -45,17 +95,19 @@ export default function Nfts({}: Props) {
       },
       {
         ...nftContract,
-        functionName: "totalSupply",
+        functionName: "balanceOf",
+        args: [address as `0x${string}`],
       },
     ],
     enabled: isConnected && address != null,
     watch: true,
+    cacheOnBlock: true,
   });
 
   useEffect(() => {
     if (data != undefined) {
       setMaxPerWallet(Number(data[0].result));
-      setTotalSupply(Number(data[1].result));
+      setNftBalance(Number(data[1].result));
     }
   }, [data]);
 
@@ -71,55 +123,23 @@ export default function Nfts({}: Props) {
   }, []);
 
   useEffect(() => {
-    async function getNFT() {
-      const response = await Moralis.EvmApi.nft.getWalletNFTs({
-        chain: chain ? toHex(chain.id) : "0x1",
-        format: "decimal",
-        limit: maxPerWallet,
-        excludeSpam: false,
-        tokenAddresses: [NFT_CONTRACT],
-        mediaItems: false,
-        address: address as string,
+    const chainId = chain ? toHex(chain.id) : "0x1";
+    // console.log(isConnected);
+    // console.log(address);
+    // console.log(maxPerWallet);
+    // console.log(nftBalance);
+    if (
+      isConnected &&
+      maxPerWallet != undefined &&
+      address != undefined &&
+      nftBalance != undefined
+    ) {
+      getNFT(chainId, maxPerWallet, address).then((nftArray) => {
+        setNftsOwned(nftArray);
+        console.log(nftsOwned?.length);
       });
-
-      const nfts = response.result;
-
-      let nftArray: NFTMeta[] = [];
-      const maxShow = maxPerWallet ? maxPerWallet : 10;
-      for (let index = 1; index <= maxShow; index++) {
-        const nft = nfts.at(-index);
-        if (nft != undefined) {
-          let imageURL: string = "/unrevealed.jpg";
-
-          const res = await fetch(
-            `https://bafybeic2a7jdsztni6jsnq2oarb3o5g7iuya5r4lcjfqi64rsucirdfobm.ipfs.nftstorage.link/${nft.tokenId}`,
-          );
-          const json = await res.json();
-          const [prefix, separator, url, color, name] = json.image.split("/");
-          imageURL = `https://bafybeiaf6ppnztlf3k5edqrgq3zae5ih2y6vhf255hekkqn6vjwazhq36q.ipfs.nftstorage.link/${color}/${name}`;
-
-          let iNft: NFTMeta = {
-            name: nft.name + " #" + nft.tokenId,
-            id: Number(nft.tokenId),
-            path: imageURL,
-          };
-          nftArray.push(iNft);
-        } else {
-          let iNft: NFTMeta = {
-            name: "Flameling #?",
-            id: index + 1100,
-            path: "/unrevealed.jpg",
-          };
-          nftArray.push(iNft);
-        }
-      }
-      setNftsOwned(nftArray);
     }
-
-    if (isConnected) {
-      getNFT();
-    }
-  }, [isConnected, totalSupply, address, maxPerWallet]);
+  }, [isConnected, nftBalance, address, maxPerWallet]);
 
   return (
     <div className="h-full w-full pb-8">

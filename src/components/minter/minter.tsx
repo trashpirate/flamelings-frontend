@@ -36,9 +36,13 @@ export default function Minter({}: Props) {
     undefined,
   );
   const [nftBalance, setNftBalance] = useState<number | undefined>(undefined);
-  const [maxPerWallet, setMaxPerWallet] = useState<number>(10);
-  const [batchLimit, setBatchLimit] = useState<number>(0);
-  const [mintAuthorized, setMintAuthorized] = useState<boolean>(false);
+  const [maxPerWallet, setMaxPerWallet] = useState<number | undefined>(
+    undefined,
+  );
+  const [batchLimit, setBatchLimit] = useState<number | undefined>(undefined);
+  const [mintAuthorized, setMintAuthorized] = useState<boolean | undefined>(
+    undefined,
+  );
 
   const [buttonText, setButtonText] = useState<string>("MINT");
   const [imagePath, setImagePath] = useState<string>("/logo.png");
@@ -108,18 +112,24 @@ export default function Minter({}: Props) {
   });
 
   useEffect(() => {
-    if (nftData != undefined) {
-      setNftBalance(Number(nftData?.[0].result));
-      setBatchLimit(Number(nftData?.[1].result));
-      setMaxPerWallet(Number(nftData?.[2].result));
-    }
+    nftData
+      ? setNftBalance(Number(nftData[0].result))
+      : setNftBalance(undefined);
+    nftData
+      ? setBatchLimit(Number(nftData[1].result))
+      : setBatchLimit(undefined);
+    nftData
+      ? setMaxPerWallet(Number(nftData[2].result))
+      : setMaxPerWallet(undefined);
   }, [nftData]);
 
   useEffect(() => {
-    if (accountData != undefined) {
-      setTokenBalance(accountData[0].result);
-      setApprovedAmount(accountData[1].result);
-    }
+    accountData
+      ? setTokenBalance(accountData[0].result)
+      : setTokenBalance(undefined);
+    accountData
+      ? setApprovedAmount(accountData[1].result)
+      : setApprovedAmount(undefined);
   }, [accountData]);
 
   // approving funds
@@ -157,25 +167,40 @@ export default function Minter({}: Props) {
 
   // update authorization for minting
   useEffect(() => {
+    console.log("-- variables");
+    console.log(approvedAmount);
+    console.log(transferAmount);
+    console.log(nftBalance);
+    console.log(maxPerWallet);
+    console.log(quantity);
+
     if (
-      Number(quantity) > 0 &&
-      approvedAmount != undefined &&
-      approvedAmount >= transferAmount &&
-      nftBalance != undefined &&
-      nftBalance + Number(quantity) < maxPerWallet
+      approvedAmount == undefined ||
+      nftBalance == undefined ||
+      maxPerWallet == undefined ||
+      transferAmount == undefined
     ) {
+      console.log("-- undefined");
+      setMintAuthorized(undefined);
+    } else if (
+      Number(quantity) > 0 &&
+      nftBalance + Number(quantity) <= maxPerWallet &&
+      approvedAmount >= transferAmount
+    ) {
+      console.log("-- true");
       setMintAuthorized(true);
     } else {
+      console.log("-- false");
       setMintAuthorized(false);
     }
     console.log(mintAuthorized);
   }, [approvedAmount, transferAmount, quantity, nftBalance, maxPerWallet]);
 
   useEffect(() => {
-    if (mintAuthorized && approvalSuccess) {
+    if (mintAuthorized != undefined && mintAuthorized && approvalSuccess) {
       mint?.();
     }
-  }, [mintAuthorized, approvalSuccess, mint]);
+  }, [mintAuthorized, approvalSuccess]);
 
   // update transfer amount
   useEffect(() => {
@@ -228,6 +253,7 @@ export default function Minter({}: Props) {
         );
       } else if (
         nftBalance != undefined &&
+        maxPerWallet != undefined &&
         nftBalance + Number(quantity) > maxPerWallet
       ) {
         // max per wallet exceeded
@@ -352,7 +378,7 @@ export default function Minter({}: Props) {
             } PER NFT`}</div>
           </div>
         </div>
-        {mintPanel(batchLimit)}
+        {batchLimit ? mintPanel(batchLimit) : mintPanel(0)}
       </div>
       {/* <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeModal}>
