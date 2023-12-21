@@ -333,7 +333,7 @@ export default function Minter({}: Props) {
           <div className="mx-auto my-2 h-12 w-fit rounded-xl border-2 border-black bg-primary px-4 py-2 font-bold text-black hover:border-primary hover:bg-hover">
             <a
               className="m-auto"
-              href="https://pancakeswap.finance/swap?chain=bsc&outputCurrency=0xdB238123939637D65a03E4b2b485650B4f9D91CB"
+              href="https://app.uniswap.org/swap?outputCurrency=0x0b61C4f33BCdEF83359ab97673Cb5961c6435F4E"
               target={"_blank"}
             >
               <p>{`BUY $${process.env.NEXT_PUBLIC_TOKEN_SYMBOL}`}</p>
