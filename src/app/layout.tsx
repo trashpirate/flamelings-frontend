@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: process.env.NEXT_PUBLIC_PROJECT_URL,
     creator: "@buyholdearn",
-    images: "https://buyholdearn.com/preview.jpg",
+    images: "https://flame.buyholdearn.com/preview.jpg",
   },
   openGraph: {
     type: "website",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: process.env.NEXT_PUBLIC_PROJECT_NAME,
     images: [
       {
-        url: "https://buyholdearn.com/preview.jpg",
+        url: "https://flame.buyholdearn.com/preview.jpg",
       },
     ],
   },
