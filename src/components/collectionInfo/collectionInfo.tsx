@@ -67,7 +67,7 @@ export default function CollectionInfo({}: Props) {
           <p>Contract:</p>
 
           <a
-            href={`${process.env.NEXT_PUBLIC_NETWORK_SCAN}/address/${process.env.NFT_CONTRACT}#code`}
+            href={`${process.env.NEXT_PUBLIC_NETWORK_SCAN}/address/${NFT_CONTRACT}#code`}
           >
             <div className="mt-1 overflow-hidden text-ellipsis text-xs text-opacity-60 hover:text-hover">
               {NFT_CONTRACT}
