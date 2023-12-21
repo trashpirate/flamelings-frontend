@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   applicationName: process.env.NEXT_PUBLIC_PROJECT_NAME,
   twitter: {
     card: "summary_large_image",
-    site: "https://flame.buyholdearn.com",
+    site: "flame.buyholdearn.com",
     creator: "@buyholdearn",
     images: "https://flame.buyholdearn.com/preview.jpeg",
   },
