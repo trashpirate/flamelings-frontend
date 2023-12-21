@@ -329,7 +329,7 @@ export default function Minter({}: Props) {
     } else {
       return (
         <div className="flex-col justify-center gap-4 pt-4 text-center">
-          <p className="my-8">MINT STARTS ON DEC 25TH, 1PM CST</p>
+          <p className="my-8">MINT STARTS ON DEC 23TH, 1PM CST</p>
           <div className="mx-auto my-2 h-12 w-fit rounded-xl border-2 border-black bg-primary px-4 py-2 font-bold text-black hover:border-primary hover:bg-hover">
             <a
               className="m-auto"
