@@ -11,19 +11,20 @@ export const metadata: Metadata = {
   applicationName: process.env.NEXT_PUBLIC_PROJECT_NAME,
   twitter: {
     card: "summary_large_image",
-    site: process.env.NEXT_PUBLIC_PROJECT_URL,
+    site: "https://flame.buyholdearn.com",
     creator: "@buyholdearn",
-    images: "https://flame.buyholdearn.com/preview.jpg",
+    images: "https://flame.buyholdearn.com/preview.jpeg",
   },
   openGraph: {
     type: "website",
-    url: process.env.NEXT_PUBLIC_PROJECT_URL,
-    title: process.env.NEXT_PUBLIC_PROJECT_NAME,
-    description: process.env.NEXT_PUBLIC_PROJECT_DESCRIPTION,
-    siteName: process.env.NEXT_PUBLIC_PROJECT_NAME,
+    url: "https://flame.buyholdearn.com",
+    title: "Flamelings",
+    description:
+      "The adorable Flamelings embody the warmth and energy of the fire they are born from. Funny, powerful, brave, patient, and dependable, they reflect the diverse qualities of the EARN community.",
+    siteName: "Flamelings",
     images: [
       {
-        url: "https://flame.buyholdearn.com/preview.jpg",
+        url: "https://flame.buyholdearn.com/preview.jpeg",
       },
     ],
   },
