@@ -85,16 +85,16 @@ export default function AccountInfo({}: Props) {
     } else if (isSuccess && tokenBalance != null) {
       let truncBalance: number;
       let letter: string;
-      if (tokenBalance > 1000000000000) {
+      if (tokenBalance >= 1000000000000) {
         truncBalance = tokenBalance / 1000000000000;
         letter = "T";
-      } else if (tokenBalance > 1000000000) {
+      } else if (tokenBalance >= 1000000000) {
         truncBalance = tokenBalance / 1000000000;
         letter = "B";
-      } else if (tokenBalance > 1000000) {
+      } else if (tokenBalance >= 1000000) {
         truncBalance = tokenBalance / 1000000;
         letter = "M";
-      } else if (tokenBalance > 1000) {
+      } else if (tokenBalance >= 1000) {
         truncBalance = tokenBalance / 1000;
         letter = "K";
       } else {

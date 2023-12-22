@@ -72,7 +72,7 @@ export default function Nfts({}: Props) {
     undefined,
   );
   const [nftBalance, setNftBalance] = useState<number | undefined>(undefined);
-  const [nftsOwned, setNftsOwned] = useState<NFTMeta[] | null>(null);
+  const [nftsOwned, setNftsOwned] = useState<NFTMeta[] | undefined>(undefined);
 
   // get account address
   const { address, isConnecting, isDisconnected, isConnected } = useAccount({});
@@ -108,6 +108,7 @@ export default function Nfts({}: Props) {
     if (data != undefined) {
       setMaxPerWallet(Number(data[0].result));
       setNftBalance(Number(data[1].result));
+      // console.log(nftBalance);
     }
   }, [data]);
 
@@ -124,10 +125,6 @@ export default function Nfts({}: Props) {
 
   useEffect(() => {
     const chainId = chain ? toHex(chain.id) : "0x1";
-    // console.log(isConnected);
-    // console.log(address);
-    // console.log(maxPerWallet);
-    // console.log(nftBalance);
     if (
       isConnected &&
       maxPerWallet != undefined &&
@@ -136,7 +133,7 @@ export default function Nfts({}: Props) {
     ) {
       getNFT(chainId, maxPerWallet, address).then((nftArray) => {
         setNftsOwned(nftArray);
-        console.log(nftsOwned?.length);
+        // console.log(nftsOwned?.length);
       });
     }
   }, [isConnected, nftBalance, address, maxPerWallet]);
@@ -149,7 +146,7 @@ export default function Nfts({}: Props) {
         </h2>
         <div className="my-4 min-h-max">
           <div className="grid grid-cols-2 place-content-center gap-4 sm:grid-cols-3 md:grid-cols-5 ">
-            {nftsOwned != null &&
+            {nftsOwned != undefined &&
               nftsOwned.map(function (nft) {
                 let hover: string = "";
                 if (nft.id <= 1000) hover = "  hover:border-primary";
