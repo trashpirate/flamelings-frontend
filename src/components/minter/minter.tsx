@@ -2,7 +2,6 @@
 import { nftABI } from "@/assets/nftABI";
 import { tokenABI } from "@/assets/tokenABI";
 import React, { Fragment, useEffect, useState } from "react";
-import Image from "next/image";
 
 import { parseUnits } from "viem";
 import {
@@ -13,7 +12,11 @@ import {
   usePrepareContractWrite,
   useWaitForTransaction,
 } from "wagmi";
-import { Dialog, Transition } from "@headlessui/react";
+
+import MintAnimation from "./mintAnimation";
+import MintMessage from "./mintMessage";
+import MintInputPanel from "./mintInputPanel";
+import MintButton from "./mintButton";
 
 const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
 const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${string}`;
@@ -43,12 +46,12 @@ export default function Minter({}: Props) {
   const [mintAuthorized, setMintAuthorized] = useState<boolean | undefined>(
     undefined,
   );
-
-  const [buttonText, setButtonText] = useState<string>("MINT");
-  const [imagePath, setImagePath] = useState<string>("/logo.png");
-  const [message, setMessage] = useState<string>(
-    "Mint an NFT and win a prize!",
-  );
+  const [mintEnabled, setMintEnabled] = useState<boolean>(false);
+  const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
+  const [insufficientFunds, setInsufficientFunds] = useState<boolean>(false);
+  const [maxPerWalletExceeded, setMaxPerWalletExceeded] =
+    useState<boolean>(false);
+  const [soldOut, setSoldOut] = useState<boolean>(false);
 
   // get account address
   const { address, isConnecting, isDisconnected, isConnected } = useAccount({});
@@ -155,7 +158,7 @@ export default function Minter({}: Props) {
     ...nftContract,
     functionName: "mint",
     args: [BigInt(quantity)],
-    enabled: isConnected && mintAuthorized,
+    enabled: mintAuthorized === true && isConnected,
   });
   const { data: mintData, write: mint } = useContractWrite(mintConfig);
 
@@ -167,37 +170,37 @@ export default function Minter({}: Props) {
 
   // update authorization for minting
   useEffect(() => {
-    console.log("-- variables");
-    console.log(approvedAmount);
-    console.log(transferAmount);
-    console.log(nftBalance);
-    console.log(maxPerWallet);
-    console.log(quantity);
+    // console.log("-- variables");
+    // console.log("approved amount: " + approvedAmount);
+    // console.log("transfer amount: " + transferAmount);
+    // console.log("nft balance: " + nftBalance);
+    // console.log("max per wallet: " + maxPerWallet);
+    // console.log("quantity: " + quantity);
 
-    if (
-      approvedAmount == undefined ||
-      nftBalance == undefined ||
-      maxPerWallet == undefined ||
-      transferAmount == undefined
-    ) {
-      console.log("-- undefined");
-      setMintAuthorized(undefined);
-    } else if (
-      Number(quantity) > 0 &&
-      nftBalance + Number(quantity) <= maxPerWallet &&
-      approvedAmount >= transferAmount
-    ) {
-      console.log("-- true");
-      setMintAuthorized(true);
-    } else {
-      console.log("-- false");
-      setMintAuthorized(false);
-    }
-    console.log(mintAuthorized);
+    const isMintAuthorized = () => {
+      if (
+        approvedAmount === undefined ||
+        nftBalance === undefined ||
+        maxPerWallet === undefined ||
+        transferAmount === undefined
+      ) {
+        return undefined;
+      } else if (
+        Number(quantity) > 0 &&
+        nftBalance + Number(quantity) <= maxPerWallet &&
+        approvedAmount >= transferAmount
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    setMintAuthorized(isMintAuthorized());
   }, [approvedAmount, transferAmount, quantity, nftBalance, maxPerWallet]);
 
   useEffect(() => {
-    if (mintAuthorized != undefined && mintAuthorized && approvalSuccess) {
+    if (mintAuthorized === true && approvalSuccess) {
       mint?.();
     }
   }, [mintAuthorized, approvalSuccess]);
@@ -213,236 +216,104 @@ export default function Minter({}: Props) {
       );
   }, [quantity]);
 
+  // update mint status
+  useEffect(() => {
+    if (batchLimit === undefined || batchLimit === 0) setMintEnabled(false);
+    else setMintEnabled(true);
+  }, [batchLimit]);
+
+  // update isufficient funds
+  useEffect(() => {
+    if (tokenBalance != undefined && tokenBalance < transferAmount)
+      setInsufficientFunds(true);
+    else setInsufficientFunds(false);
+  }, [tokenBalance, transferAmount]);
+
+  // update max per wallet exceeded
+  useEffect(() => {
+    if (
+      nftBalance != undefined &&
+      maxPerWallet != undefined &&
+      nftBalance + Number(quantity) > maxPerWallet
+    )
+      setMaxPerWalletExceeded(true);
+    else setMaxPerWalletExceeded(false);
+  }, [nftBalance, quantity, maxPerWallet]);
+
+  // update max per wallet exceeded
+  useEffect(() => {
+    if (
+      approvalLoading ||
+      isMintLoading ||
+      (!mintAuthorized && !approve) ||
+      (mintAuthorized && !mint)
+    )
+      setButtonEnabled(false);
+    else setButtonEnabled(true);
+  }, [approvalLoading, isMintLoading, mintAuthorized]);
+
   // ============================================================================
   // display elements
 
-  // set image path
-  useEffect(() => {
-    if (isMintLoading && isConnected) {
-      setImagePath("/nftAnimation.gif");
-    } else if (!isMintLoading && isMintSuccess && isConnected) {
-      setImagePath("/featured_image.jpg");
-      setMessage("Minting completed.");
-    } else {
-      setImagePath("/featured_image.jpg");
-    }
-  }, [isMintLoading, isMintSuccess, isConnected]);
+  const setMintQuantity = (value: string) => {
+    setQuantity(value);
+  };
 
-  useEffect(() => {
-    if (isMintLoading) setButtonText("Minting...");
-    else if (approvalLoading) setButtonText("Approving Funds...");
-    else if (mintAuthorized) setButtonText("CONFIRM MINT");
-    else setButtonText("MINT");
-  }, [isMintLoading, approvalLoading, mintAuthorized]);
-
-  function mintButton() {
-    if (isDisconnected && batchLimit) {
-      return <div className="mt-4">Connect your wallet to mint an NFT</div>;
-    } else if (batchLimit) {
-      // mint is enabled
-      // =====================================================
-      if (tokenBalance != undefined && tokenBalance < transferAmount) {
-        return (
-          <button
-            className="bg-buttonInactive text-buttonInactiveText rounded-xl px-5 py-3"
-            disabled={true}
-            onClick={(e) => {}}
-          >
-            Insufficient Balance
-          </button>
-        );
-      } else if (
-        nftBalance != undefined &&
-        maxPerWallet != undefined &&
-        nftBalance + Number(quantity) > maxPerWallet
-      ) {
-        // max per wallet exceeded
-        return (
-          <button
-            className="bg-buttonInactive text-buttonInactiveText rounded-xl px-5 py-3"
-            disabled={true}
-            onClick={(e) => {}}
-          >
-            {`Max. ${maxPerWallet} NFTs/Wallet`}
-          </button>
-        );
-        // TODO: no more nfts to mint
-        // SOLD OUT
-      } else {
-        // minting enabled
-        return (
-          <button
-            className="h-12 rounded-xl border-2 border-black bg-primary px-5 py-3 font-bold text-black hover:border-primary hover:bg-hover"
-            disabled={
-              isMintLoading ||
-              (!mintAuthorized && !approve) ||
-              (mintAuthorized && !mint)
-            }
-            onClick={(e) => {
-              if (!mintAuthorized) {
-                // openModal();
-                approve?.();
-              } else {
-                mint?.();
-              }
-            }}
-          >
-            {buttonText}
-          </button>
-        );
-      }
-    } else {
-      return <div>NFT MINT STARTS ON JANUARY 12TH</div>;
-    }
-  }
-
-  function mintPanel(canMint: number) {
-    if (canMint > 0) {
-      return (
-        <div className="pt-2">
-          <div className="flex h-14 justify-center">
-            <h1 className="my-auto text-center align-middle text-lg text-primary">
-              {message}
-            </h1>
-          </div>
-          <div className="my-4 justify-center text-center">
-            <form>
-              <label>
-                Enter number of NFTs:
-                <input
-                  className="bg-inputBackground mx-auto ml-3 rounded p-1 text-center"
-                  type="number"
-                  value={quantity}
-                  max={batchLimit}
-                  min="1"
-                  placeholder="1"
-                  onChange={(e) => {
-                    setQuantity(e.target.value);
-                  }}
-                />
-              </label>
-            </form>
-          </div>
-          <div className="mt-2 flex justify-center">{mintButton()}</div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex-col justify-center gap-4 pt-4 text-center">
-          <p className="my-8">MINT STARTS ON DEC 23TH, 1PM CST</p>
-          <div className="mx-auto my-2 h-12 w-fit rounded-xl border-2 border-black bg-primary px-4 py-2 font-bold text-black hover:border-primary hover:bg-hover">
-            <a
-              className="m-auto"
-              href="https://app.uniswap.org/swap?outputCurrency=0x0b61C4f33BCdEF83359ab97673Cb5961c6435F4E"
-              target={"_blank"}
-            >
-              <p>{`BUY $${process.env.NEXT_PUBLIC_TOKEN_SYMBOL}`}</p>
-            </a>
-          </div>
-        </div>
-      );
-    }
-  }
-
-  let [isOpen, setIsOpen] = useState(false);
-
-  function closeModal() {
-    setIsOpen(false);
-  }
-
-  function openModal() {
-    setIsOpen(true);
-  }
+  const getMintQuantity = () => {
+    return quantity;
+  };
 
   return (
     <>
       <div className="mx-auto h-full w-full max-w-sm flex-col justify-between rounded-lg bg-black p-8 shadow-inner-sym md:max-w-none">
-        <div className="mx-auto mb-4 w-full max-w-xs overflow-hidden rounded border-2 border-white bg-white">
-          <Image
-            src={imagePath}
-            width={250}
-            height={250}
-            alt="Flameling NFTs"
-            style={{
-              width: "100%",
-              height: "auto",
-            }}
-            priority
-          />
-          <div className="m-4">
-            <div className="m-1 font-bold text-black">{"Flamelings"}</div>
-            <div className="m-1 text-black">{`${
-              NFT_FEE / 1000
-            }${String.fromCharCode(8239)}K $${
-              process.env.NEXT_PUBLIC_TOKEN_SYMBOL
-            } PER NFT`}</div>
-          </div>
-        </div>
-        {batchLimit ? mintPanel(batchLimit) : mintPanel(0)}
-      </div>
-      {/* <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/25" />
-          </Transition.Child>
+        <MintAnimation
+          isMintLoading={isMintLoading}
+          isMintSuccess={isMintSuccess}
+          isConnected={isConnected}
+        ></MintAnimation>
+        <MintMessage
+          isMintLoading={isMintLoading}
+          isMintSuccess={isMintSuccess}
+          isApprovalLoading={approvalLoading}
+        ></MintMessage>
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  <Dialog.Title
-                    as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
-                  >
-                    {`Approve ${process.env.NEXT_PUBLIC_TOKEN_SYMBOL}`}
-                  </Dialog.Title>
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
-                      {`Confirm in your wallet to approve ${process.env.NEXT_PUBLIC_TOKEN_SYMBOL} to mint NFTs.`}
-                    </p>
-                  </div>
-
-                  <div className="mt-4">
-                    <button
-                      disabled={
-                        isMintLoading ||
-                        approvalLoading ||
-                        approvedAmount == undefined ||
-                        approvedAmount < transferAmount ||
-                        (approvedAmount >= transferAmount && !mint)
-                      }
-                      type="button"
-                      className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                      onClick={(e) => {
-                        mint?.();
-                        closeModal();
-                      }}
-                    >
-                      Got it, thanks!
-                    </button>
-                  </div>
-                </Dialog.Panel>
-              </Transition.Child>
+        {mintEnabled ? (
+          <div className="pt-2">
+            <div className="my-4 justify-center text-center">
+              <MintInputPanel
+                setMintQuantity={setMintQuantity}
+                getMintQuantity={getMintQuantity}
+                batchLimit={batchLimit}
+              ></MintInputPanel>
+            </div>
+            {/* <div className="mt-2 flex justify-center">{mintButton()}</div> */}
+            <div className="mt-2 flex justify-center">
+              <MintButton
+                insufficientFunds={insufficientFunds}
+                maxPerWalletExceeded={maxPerWalletExceeded}
+                maxPerWallet={maxPerWallet}
+                mintAuthorized={mintAuthorized}
+                buttonEnabled={buttonEnabled}
+                approve={approve}
+                mint={mint}
+              ></MintButton>
             </div>
           </div>
-        </Dialog>
-      </Transition> */}
+        ) : (
+          <div className="flex-col justify-center gap-4 text-center">
+            <p className="my-8">MINT STARTS ON DEC 23TH, 1PM CST</p>
+            <div className="mx-auto my-2 flex h-12 w-fit rounded-xl border-2 border-black bg-primary px-4 align-middle font-bold text-black hover:border-primary hover:bg-hover">
+              <a
+                className="m-auto"
+                href="https://app.uniswap.org/swap?outputCurrency=0x0b61C4f33BCdEF83359ab97673Cb5961c6435F4E"
+                target={"_blank"}
+              >
+                <p>{`BUY $${process.env.NEXT_PUBLIC_TOKEN_SYMBOL}`}</p>
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
     </>
   );
 }
