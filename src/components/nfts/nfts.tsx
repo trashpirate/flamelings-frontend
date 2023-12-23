@@ -176,7 +176,7 @@ export default function Nfts({}: Props) {
                 return (
                   <Link
                     key={nft.id}
-                    href={`${ process.env.NEXT_PUBLIC_NETWORK_SCAN }/nft/${ NFT_CONTRACT }/${ nft.id }`}
+                    href={`https://opensea.io/assets/ethereum/${ NFT_CONTRACT }/${ nft.id }`}
                   >
                     <div
                       className={
