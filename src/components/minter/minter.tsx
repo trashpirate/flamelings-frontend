@@ -219,6 +219,7 @@ export default function Minter({}: Props) {
   useEffect(() => {
     if (isApprovalSuccess) {
       refetchTokenContract();
+      refetchNftContract();
     }
   }, [isApprovalSuccess]);
 

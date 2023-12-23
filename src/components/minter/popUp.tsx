@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import PopUpButton from "./popUpButton";
+import { ClipLoader } from "react-spinners";
 
 const NFT_FEE = Number(process.env.NEXT_PUBLIC_MINT_FEE);
 
@@ -79,10 +80,10 @@ export default function PopUp({
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-2xl bg-black p-6 text-left align-middle opacity-95 shadow-xl transition-all">
                   <Dialog.Title
                     as="h3"
-                    className="text-lg font-medium leading-6 text-gray-900"
+                    className="text-lg font-medium leading-6 text-primary"
                   >
                     {readyToMint
                       ? `Confirm NFT Mint`
@@ -93,13 +94,17 @@ export default function PopUp({
                   </div>
 
                   <div className="mt-4">
-                    <PopUpButton
-                      readyToMint={readyToMint}
-                      approve={approve}
-                      mint={mint}
-                      isMinting={isMinting}
-                      isApproving={isApproving}
-                    ></PopUpButton>
+                    {isApproving || isMinting ? (
+                      <ClipLoader color="#FF6B10" />
+                    ) : (
+                      <PopUpButton
+                        readyToMint={readyToMint}
+                        approve={approve}
+                        mint={mint}
+                        isMinting={isMinting}
+                        isApproving={isApproving}
+                      ></PopUpButton>
+                    )}
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

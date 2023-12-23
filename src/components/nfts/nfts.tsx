@@ -122,7 +122,7 @@ export default function Nfts({}: Props) {
     ...tokenContract,
     eventName: "Transfer",
     listener(log: any) {
-      console.log(log);
+      // console.log(log);
       refetch();
     },
     chainId: chain?.id,
