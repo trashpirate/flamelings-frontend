@@ -2,9 +2,9 @@ import React, { useState } from "react";
 
 type Props = {
   insufficientFunds: boolean;
-  maxPerWalletExceeded: boolean;
+  maxExceeded: boolean;
   maxPerWallet: number | undefined;
-  mintAuthorized: boolean | undefined;
+  readyToMint: boolean | undefined;
   buttonEnabled: boolean;
   approve: any;
   mint: any;
@@ -14,9 +14,9 @@ type Props = {
 
 export default function MintButton({
   insufficientFunds,
-  maxPerWalletExceeded,
+  maxExceeded,
   maxPerWallet,
-  mintAuthorized,
+  readyToMint,
   buttonEnabled,
   approve,
   mint,
@@ -24,9 +24,9 @@ export default function MintButton({
   closePopUp,
 }: Props) {
   let buttonText: string;
-  //   console.log(mintAuthorized);
+  //   console.log(readyToMint);
   //   console.log(buttonEnabled);
-  if (mintAuthorized) buttonText = "CONFIRM MINT";
+  if (readyToMint) buttonText = "CONFIRM MINT";
   else buttonText = "MINT";
 
   if (insufficientFunds) {
@@ -42,7 +42,7 @@ export default function MintButton({
         </button>
       </div>
     );
-  } else if (maxPerWalletExceeded) {
+  } else if (maxExceeded) {
     // max per wallet exceeded
     return (
       <div>
@@ -63,13 +63,7 @@ export default function MintButton({
           className="h-12 rounded-xl border-2 border-black bg-primary px-5 py-3 font-bold text-black hover:border-primary hover:bg-hover"
           disabled={!buttonEnabled}
           onClick={(e) => {
-            if (!mintAuthorized) {
-              openPopUp();
-              approve?.();
-            } else {
-              closePopUp();
-              mint?.();
-            }
+            openPopUp();
           }}
         >
           {buttonText}

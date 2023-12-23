@@ -101,7 +101,7 @@ export default function Nfts({}: Props) {
     ],
     enabled: isConnected && address != null,
     watch: true,
-    cacheOnBlock: true,
+    // cacheOnBlock: true,
   });
 
   useEffect(() => {
@@ -133,7 +133,6 @@ export default function Nfts({}: Props) {
     ) {
       getNFT(chainId, maxPerWallet, address).then((nftArray) => {
         setNftsOwned(nftArray);
-        // console.log(nftsOwned?.length);
       });
     }
   }, [isConnected, nftBalance, address, maxPerWallet]);

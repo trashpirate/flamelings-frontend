@@ -3,7 +3,7 @@ import React, { useState } from "react";
 type Props = {
   setMintQuantity: any;
   getMintQuantity: any;
-  batchLimit: any;
+  batchLimit: number | undefined;
 };
 
 export default function MintInputPanel({
@@ -20,7 +20,7 @@ export default function MintInputPanel({
             className="mx-auto ml-3 rounded bg-inputBackground p-1 text-center"
             type="number"
             value={getMintQuantity()}
-            max={batchLimit}
+            max={batchLimit ? batchLimit : 10}
             min="1"
             placeholder="1"
             onChange={(e) => {

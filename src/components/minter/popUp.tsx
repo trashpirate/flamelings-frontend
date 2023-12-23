@@ -1,5 +1,6 @@
 import React, { Fragment, useEffect, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
+import PopUpButton from "./popUpButton";
 
 const NFT_FEE = Number(process.env.NEXT_PUBLIC_MINT_FEE);
 
@@ -8,6 +9,7 @@ type Props = {
   openModal: any;
   closeModal: any;
   mint: any;
+  approve: any;
   readyToMint: boolean;
   isMinting: boolean;
   isApproving: boolean;
@@ -16,9 +18,9 @@ type Props = {
 
 export default function PopUp({
   isOpen,
-  openModal,
   closeModal,
   mint,
+  approve,
   readyToMint,
   isMinting,
   isApproving,
@@ -91,19 +93,18 @@ export default function PopUp({
                   </div>
 
                   <div className="mt-4">
-                    <button
-                      className="h-12 rounded-xl border-2 border-black bg-primary px-5 py-3 font-bold text-black hover:border-primary hover:bg-hover"
-                      disabled={!readyToMint}
-                      onClick={(e) => {
-                        mint?.();
-                      }}
-                    >
-                      {"MINT"}
-                    </button>
+                    <PopUpButton
+                      readyToMint={readyToMint}
+                      approve={approve}
+                      mint={mint}
+                      isMinting={isMinting}
+                      isApproving={isApproving}
+                    ></PopUpButton>
                   </div>
                 </Dialog.Panel>
               </Transition.Child>
             </div>
+            s
           </div>
         </Dialog>
       </Transition>
