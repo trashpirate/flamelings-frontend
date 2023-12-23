@@ -227,21 +227,22 @@ export default function Minter({}: Props) {
   useEffect(() => {
     const isMintAuthorized = () => {
       if (
-        approvedAmount === undefined ||
-        nftBalance === undefined ||
-        maxPerWallet === undefined ||
-        transferAmount === undefined
+        approvedAmount != undefined &&
+        nftBalance != undefined &&
+        maxPerWallet !== undefined &&
+        transferAmount !== undefined
       ) {
-        return false;
-      } else if (
-        Number(quantity) > 0 &&
-        nftBalance + Number(quantity) <= maxPerWallet &&
-        approvedAmount >= transferAmount
-      ) {
-        return true;
-      } else {
-        return false;
+        if (
+          Number(quantity) > 0 &&
+          nftBalance + Number(quantity) <= maxPerWallet &&
+          approvedAmount >= transferAmount
+        ) {
+          return true;
+        } else {
+          return false;
+        }
       }
+      return false;
     };
     setReadyToMint(isMintAuthorized());
   }, [
@@ -391,18 +392,18 @@ export default function Minter({}: Props) {
             </div>
           </div>
         )}
+        <PopUp
+          isOpen={isOpen}
+          openModal={openModal}
+          closeModal={closeModal}
+          mint={mint}
+          approve={approve}
+          readyToMint={readyToMint ? readyToMint : false}
+          isApproving={isApprovalLoading && !isApprovalSuccess}
+          isMinting={isMintLoading && !isMintSuccess}
+          quantity={quantity}
+        ></PopUp>
       </div>
-      <PopUp
-        isOpen={isOpen}
-        openModal={openModal}
-        closeModal={closeModal}
-        mint={mint}
-        approve={approve}
-        readyToMint={readyToMint ? readyToMint : false}
-        isApproving={isApprovalLoading && !isApprovalSuccess}
-        isMinting={isMintLoading && !isMintSuccess}
-        quantity={quantity}
-      ></PopUp>
     </>
   );
 }
