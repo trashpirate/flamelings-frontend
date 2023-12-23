@@ -266,7 +266,7 @@ export default function Minter({}: Props) {
 
   // update mint status
   useEffect(() => {
-    if (batchLimit != undefined) {
+    if (batchLimit !== undefined) {
       if (batchLimit === 0) setMintStarted(false);
       else setMintStarted(true);
     }
@@ -274,9 +274,7 @@ export default function Minter({}: Props) {
 
   // update isufficient funds
   useEffect(() => {
-    if (tokenBalance === undefined) {
-      setInsufficientFunds(true);
-    } else {
+    if (tokenBalance !== undefined) {
       if (tokenBalance < transferAmount) setInsufficientFunds(true);
       else setInsufficientFunds(false);
     }
@@ -284,9 +282,7 @@ export default function Minter({}: Props) {
 
   // update max per wallet exceeded
   useEffect(() => {
-    if (nftBalance == undefined || maxPerWallet == undefined) {
-      setMaxExceeded(true);
-    } else {
+    if (nftBalance != undefined && maxPerWallet != undefined) {
       if (nftBalance + Number(quantity) > maxPerWallet) setMaxExceeded(true);
       else setMaxExceeded(false);
     }
