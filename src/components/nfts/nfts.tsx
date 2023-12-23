@@ -1,13 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useAccount, useContractReads, useNetwork } from "wagmi";
+import {
+  useAccount,
+  useContractEvent,
+  useContractReads,
+  useNetwork,
+} from "wagmi";
 import { nftABI } from "@/assets/nftABI";
+import { tokenABI } from "@/assets/tokenABI";
 import Image from "next/image";
 import Moralis from "moralis";
 import Link from "next/link";
 import { toHex } from "viem";
 
 const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
+const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${string}`;
 
 interface NFTMeta {
   name: string;
@@ -81,13 +88,20 @@ export default function Nfts({}: Props) {
   const { chain } = useNetwork();
 
   // define token contract config
+  const tokenContract = {
+    address: TOKEN_CONTRACT,
+    abi: tokenABI,
+    chainId: chain?.id,
+  };
+
+  // define token contract config
   const nftContract = {
     address: NFT_CONTRACT,
     abi: nftABI,
     chainId: chain?.id,
   };
 
-  const { data, isSuccess, isError, isLoading } = useContractReads({
+  const { data, isSuccess, refetch } = useContractReads({
     contracts: [
       {
         ...nftContract,
@@ -102,6 +116,16 @@ export default function Nfts({}: Props) {
     enabled: isConnected && address != null,
     watch: true,
     // cacheOnBlock: true,
+  });
+
+  useContractEvent({
+    ...tokenContract,
+    eventName: "Transfer",
+    listener(log: any) {
+      console.log(log);
+      refetch();
+    },
+    chainId: chain?.id,
   });
 
   useEffect(() => {

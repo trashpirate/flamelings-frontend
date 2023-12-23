@@ -66,7 +66,7 @@ export default function MintButton({
             openPopUp();
           }}
         >
-          {buttonText}
+          MINT
         </button>
       </div>
     );
