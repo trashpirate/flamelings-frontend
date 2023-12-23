@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 
-const NFT_FEE = 100000;
+const NFT_FEE = Number(process.env.NEXT_PUBLIC_MINT_FEE);
 
 type Props = {
   isMintLoading: boolean;

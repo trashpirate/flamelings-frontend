@@ -110,7 +110,7 @@ export default function Nfts({}: Props) {
       setNftBalance(Number(data[1].result));
       // console.log(nftBalance);
     }
-  }, [data]);
+  }, [data, isSuccess]);
 
   useEffect(() => {
     async function startMoralis() {
