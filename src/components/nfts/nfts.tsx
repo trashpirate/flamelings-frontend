@@ -1,75 +1,29 @@
 "use client";
 import React, {useEffect, useState} from "react";
-import {
-  useAccount,
-  useContractEvent,
-  useContractReads,
-  useNetwork,
-} from "wagmi";
+import {useAccount, useContractReads, useNetwork} from "wagmi";
 import {nftABI} from "@/assets/nftABI";
 import {tokenABI} from "@/assets/tokenABI";
 import Image from "next/image";
-import Moralis from "moralis";
+import {Alchemy, Network} from "alchemy-sdk";
 import Link from "next/link";
-import {toHex} from "viem";
 
 const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${ string }`;
 const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${ string }`;
+
+const config = {
+  apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
+  network:
+    process.env.NEXT_PUBLIC_TESTNET == "true"
+      ? Network.ETH_SEPOLIA
+      : Network.ETH_MAINNET,
+};
+
+const alchemy = new Alchemy(config);
 
 interface NFTMeta {
   name: string;
   path: string;
   id: number;
-}
-
-async function getNFT(
-  chainId: string,
-  maxPerWallet: number,
-  address: `0x${ string }`,
-) {
-  const response = await Moralis.EvmApi.nft.getWalletNFTs({
-    chain: chainId,
-    format: "decimal",
-    limit: maxPerWallet,
-    excludeSpam: false,
-    tokenAddresses: [NFT_CONTRACT],
-    mediaItems: false,
-    address: address as string,
-  });
-
-  const nfts = response.result;
-
-  let nftArray: NFTMeta[] = [];
-  const maxShow = maxPerWallet ? maxPerWallet : 10;
-  for (let index = 1; index <= maxShow; index++) {
-    const nft = nfts.at(-index);
-    if (nft != undefined) {
-      let imageURL: string = "/unrevealed.jpg";
-
-      const res = await fetch(
-        `https://bafybeic2a7jdsztni6jsnq2oarb3o5g7iuya5r4lcjfqi64rsucirdfobm.ipfs.nftstorage.link/${ nft.tokenId }`,
-      );
-      const json = await res.json();
-      const [prefix, separator, url, color, name] = json.image.split("/");
-      imageURL = `https://bafybeiaf6ppnztlf3k5edqrgq3zae5ih2y6vhf255hekkqn6vjwazhq36q.ipfs.nftstorage.link/${ color }/${ name }`;
-
-      let iNft: NFTMeta = {
-        name: nft.name + " #" + nft.tokenId,
-        id: Number(nft.tokenId),
-        path: imageURL,
-      };
-      nftArray.push(iNft);
-    } else {
-      let iNft: NFTMeta = {
-        name: "Flameling #?",
-        id: index + 1100,
-        path: "/unrevealed.jpg",
-      };
-      nftArray.push(iNft);
-    }
-  }
-
-  return nftArray;
 }
 
 type Props = {};
@@ -80,6 +34,7 @@ export default function Nfts({}: Props) {
   );
   const [nftBalance, setNftBalance] = useState<number | undefined>(undefined);
   const [nftsOwned, setNftsOwned] = useState<NFTMeta[] | undefined>(undefined);
+  const [totalSupply, setTotalSupply] = useState<number | undefined>(undefined);
 
   // get account address
   const {address, isConnecting, isDisconnected, isConnected} = useAccount({});
@@ -112,60 +67,82 @@ export default function Nfts({}: Props) {
         functionName: "balanceOf",
         args: [address as `0x${ string }`],
       },
+      {
+        ...nftContract,
+        functionName: "totalSupply",
+      },
     ],
     enabled: isConnected && address != null,
     watch: true,
-    // cacheOnBlock: true,
+    cacheOnBlock: true,
   });
 
-  useContractEvent({
-    ...tokenContract,
-    eventName: "Transfer",
-    listener(log: any) {
-      // console.log(log);
-      refetch();
-    },
-    chainId: chain?.id,
-  });
+  useEffect(() => {
+    refetch();
+  }, []);
 
   useEffect(() => {
     if (data != undefined) {
       setMaxPerWallet(Number(data[0].result));
       setNftBalance(Number(data[1].result));
-      // console.log(nftBalance);
+      setTotalSupply(Number(data[2].result));
     }
   }, [data, isSuccess]);
 
-  useEffect(() => {
-    async function startMoralis() {
-      if (!Moralis.Core.isStarted) {
-        await Moralis.start({
-          apiKey: process.env.NEXT_PUBLIC_MORALIS_API_KEY,
-        });
+  async function getNFT() {
+    console.log("fetching");
+    const owner = address as string;
+    const options = {
+      contractAddresses: [NFT_CONTRACT],
+    };
+    const nfts = await alchemy.nft.getNftsForOwner(owner, options);
+    console.log(nfts);
+    let nftArray: NFTMeta[] = [];
+    const maxShow = maxPerWallet ? maxPerWallet : 10;
+    for (let index = 1; index <= maxShow; index++) {
+      const nft = nfts["ownedNfts"].at(-index);
+      if (nft != undefined) {
+        let imageURL: string = "/unrevealed.jpg";
+
+        const res = await fetch(
+          `https://bafybeic2a7jdsztni6jsnq2oarb3o5g7iuya5r4lcjfqi64rsucirdfobm.ipfs.nftstorage.link/${ nft.tokenId }`,
+        );
+        const json = await res.json();
+        const [prefix, separator, url, color, name] = json.image.split("/");
+        imageURL = `https://bafybeiaf6ppnztlf3k5edqrgq3zae5ih2y6vhf255hekkqn6vjwazhq36q.ipfs.nftstorage.link/${ color }/${ name }`;
+        console.log(nft);
+        let iNft: NFTMeta = {
+          name: nft["contract"].name
+            ? `${ nft["contract"].name }  #${ nft.tokenId }`
+            : "Flameling #?",
+          id: Number(nft.tokenId),
+          path: imageURL,
+        };
+        nftArray.push(iNft);
+      } else {
+        let iNft: NFTMeta = {
+          name: "Flameling #?",
+          id: index + 1100,
+          path: "/unrevealed.jpg",
+        };
+        nftArray.push(iNft);
       }
     }
-    startMoralis();
-  }, []);
+
+    setNftsOwned(nftArray);
+  }
 
   useEffect(() => {
-    const chainId = chain ? toHex(chain.id) : "0x1";
-    if (
-      isConnected &&
-      maxPerWallet != undefined &&
-      address != undefined &&
-      nftBalance != undefined
-    ) {
-      getNFT(chainId, maxPerWallet, address).then((nftArray) => {
-        setNftsOwned(nftArray);
-      });
+    if (isConnected) {
+      getNFT();
     }
-  }, [isConnected, nftBalance, address, maxPerWallet]);
+  }, [isConnected, nftBalance]);
 
   return (
     <div className="h-full w-full pb-8">
       <div className="mx-auto h-full max-w-sm rounded-md bg-black/80 backdrop-blur p-8 sm:w-full md:max-w-none">
         <h2 className="border-b-2 border-primary pb-2 text-justify text-xl uppercase">
-          Your NFTs (Max. 10)
+          {`Your NFTs (Max. ${ maxPerWallet })`}
         </h2>
         <div className="my-4 min-h-max">
           <div className="grid grid-cols-2 place-content-center gap-4 sm:grid-cols-3 md:grid-cols-5 ">
