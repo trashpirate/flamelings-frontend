@@ -82,6 +82,7 @@ export default function Minter({}: Props) {
     data: accountData,
     refetch: refetchTokenContract,
     isSuccess: isTokenReadSuccess,
+    isLoading: isTokenReadLoading,
   } = useContractReads({
     contracts: [
       {
@@ -105,6 +106,7 @@ export default function Minter({}: Props) {
     data: nftData,
     refetch: refetchNftContract,
     isSuccess: isNftReadSuccess,
+    isLoading: isNftReadLoading,
   } = useContractReads({
     contracts: [
       {
@@ -262,8 +264,10 @@ export default function Minter({}: Props) {
 
   // update mint status
   useEffect(() => {
-    if (batchLimit === undefined || batchLimit === 0) setMintStarted(false);
-    else setMintStarted(true);
+    if (batchLimit != undefined) {
+      if (batchLimit === 0) setMintStarted(false);
+      else setMintStarted(true);
+    }
   }, [batchLimit, isNftReadSuccess]);
 
   // update isufficient funds
