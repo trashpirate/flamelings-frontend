@@ -94,21 +94,21 @@ export default function CollectionInfo({}: Props) {
               </tr>
               <tr>
                 <td>YELLOW</td>
-                <td>0.8 %</td>
+                <td>8 %</td>
                 <td>{`100${String.fromCharCode(8239)}K ${
                   process.env.NEXT_PUBLIC_TOKEN_SYMBOL
                 }`}</td>
               </tr>
               <tr>
                 <td>RED</td>
-                <td>0.2 %</td>
+                <td>2 %</td>
                 <td>{`1${String.fromCharCode(8239)}M ${
                   process.env.NEXT_PUBLIC_TOKEN_SYMBOL
                 }`}</td>
               </tr>
               <tr>
                 <td>NOVA</td>
-                <td>0.1 %</td>
+                <td>1 %</td>
                 <td>{`1.5${String.fromCharCode(8239)}M ${
                   process.env.NEXT_PUBLIC_TOKEN_SYMBOL
                 }`}</td>

@@ -1,7 +1,7 @@
 "use client";
 import { nftABI } from "@/assets/nftABI";
 import { tokenABI } from "@/assets/tokenABI";
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { parseUnits } from "viem";
 import {
@@ -17,6 +17,7 @@ import MintAnimation from "./mintAnimation";
 import MintMessage from "./mintMessage";
 import MintInputPanel from "./mintInputPanel";
 import MintButton from "./mintButton";
+import PopUp from "./popUp";
 
 const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
 const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${string}`;
@@ -32,25 +33,28 @@ export default function Minter({}: Props) {
       Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS),
     ),
   );
-  const [approvedAmount, setApprovedAmount] = useState<bigint | undefined>(
-    undefined,
-  );
+
+  // token contract states
   const [tokenBalance, setTokenBalance] = useState<bigint | undefined>(
     undefined,
   );
+  const [approvedAmount, setApprovedAmount] = useState<bigint | undefined>(
+    undefined,
+  );
+
+  // nft contract states
   const [nftBalance, setNftBalance] = useState<number | undefined>(undefined);
   const [maxPerWallet, setMaxPerWallet] = useState<number | undefined>(
     undefined,
   );
   const [batchLimit, setBatchLimit] = useState<number | undefined>(undefined);
-  const [mintAuthorized, setMintAuthorized] = useState<boolean | undefined>(
-    undefined,
-  );
-  const [mintEnabled, setMintEnabled] = useState<boolean>(false);
+
+  // mint eligibility checks
+  const [mintStarted, setMintStarted] = useState<boolean>(false);
+  const [readyToMint, setReadyToMint] = useState<boolean>(false);
   const [buttonEnabled, setButtonEnabled] = useState<boolean>(false);
   const [insufficientFunds, setInsufficientFunds] = useState<boolean>(false);
-  const [maxPerWalletExceeded, setMaxPerWalletExceeded] =
-    useState<boolean>(false);
+  const [maxExceeded, setMaxExceeded] = useState<boolean>(false);
   const [soldOut, setSoldOut] = useState<boolean>(false);
 
   // get account address
@@ -74,7 +78,12 @@ export default function Minter({}: Props) {
   };
 
   // read token info
-  const { data: accountData } = useContractReads({
+  const {
+    data: accountData,
+    refetch: refetchTokenContract,
+    isSuccess: isTokenReadSuccess,
+    isLoading: isTokenReadLoading,
+  } = useContractReads({
     contracts: [
       {
         ...tokenContract,
@@ -92,8 +101,13 @@ export default function Minter({}: Props) {
     cacheOnBlock: true,
   });
 
-  // read nft balance
-  const { data: nftData } = useContractReads({
+  // read nft info
+  const {
+    data: nftData,
+    refetch: refetchNftContract,
+    isSuccess: isNftReadSuccess,
+    isLoading: isNftReadLoading,
+  } = useContractReads({
     contracts: [
       {
         ...nftContract,
@@ -114,6 +128,7 @@ export default function Minter({}: Props) {
     cacheOnBlock: true,
   });
 
+  // set nft contract states
   useEffect(() => {
     nftData
       ? setNftBalance(Number(nftData[0].result))
@@ -126,6 +141,7 @@ export default function Minter({}: Props) {
       : setMaxPerWallet(undefined);
   }, [nftData]);
 
+  // token contract states
   useEffect(() => {
     accountData
       ? setTokenBalance(accountData[0].result)
@@ -135,19 +151,25 @@ export default function Minter({}: Props) {
       : setApprovedAmount(undefined);
   }, [accountData]);
 
+  // WRITE CONTRACTS
+  // =========================================================
+
   // approving funds
   const { config: approvalConfig } = usePrepareContractWrite({
     address: TOKEN_CONTRACT as `0x${string}`,
     abi: tokenABI,
     functionName: "approve",
     args: [NFT_CONTRACT, transferAmount],
-    enabled: isConnected && !mintAuthorized,
+    enabled: isConnected && !readyToMint,
   });
 
-  const { data: approvedData, write: approve } =
-    useContractWrite(approvalConfig);
+  const {
+    data: approvedData,
+    write: approve,
+    isError: approvalError,
+  } = useContractWrite(approvalConfig);
 
-  const { isLoading: approvalLoading, isSuccess: approvalSuccess } =
+  const { isLoading: isApprovalLoading, isSuccess: isApprovalSuccess } =
     useWaitForTransaction({
       confirmations: 1,
       hash: approvedData?.hash,
@@ -158,9 +180,14 @@ export default function Minter({}: Props) {
     ...nftContract,
     functionName: "mint",
     args: [BigInt(quantity)],
-    enabled: mintAuthorized === true && isConnected,
+    enabled: readyToMint === true && isConnected,
   });
-  const { data: mintData, write: mint } = useContractWrite(mintConfig);
+
+  const {
+    data: mintData,
+    write: mint,
+    isError: mintError,
+  } = useContractWrite(mintConfig);
 
   const { isLoading: isMintLoading, isSuccess: isMintSuccess } =
     useWaitForTransaction({
@@ -168,89 +195,129 @@ export default function Minter({}: Props) {
       hash: mintData?.hash,
     });
 
+  useEffect(() => {
+    refetchTokenContract();
+    refetchNftContract();
+  }, []);
+
+  // handle error
+  useEffect(() => {
+    if (mintError || approvalError) {
+      closeModal();
+    }
+  }, [mintError, approvalError]);
+
+  // refetch data after approval and mint
+  useEffect(() => {
+    if (isMintSuccess) {
+      refetchTokenContract();
+      refetchNftContract();
+      closeModal();
+    }
+  }, [isMintSuccess]);
+
+  useEffect(() => {
+    if (isApprovalSuccess) {
+      refetchTokenContract();
+      refetchNftContract();
+    }
+  }, [isApprovalSuccess]);
+
   // update authorization for minting
   useEffect(() => {
-    // console.log("-- variables");
-    // console.log("approved amount: " + approvedAmount);
-    // console.log("transfer amount: " + transferAmount);
-    // console.log("nft balance: " + nftBalance);
-    // console.log("max per wallet: " + maxPerWallet);
-    // console.log("quantity: " + quantity);
-
     const isMintAuthorized = () => {
       if (
-        approvedAmount === undefined ||
-        nftBalance === undefined ||
-        maxPerWallet === undefined ||
-        transferAmount === undefined
+        approvedAmount != undefined &&
+        nftBalance != undefined &&
+        maxPerWallet !== undefined &&
+        transferAmount !== undefined
       ) {
-        return undefined;
-      } else if (
-        Number(quantity) > 0 &&
-        nftBalance + Number(quantity) <= maxPerWallet &&
-        approvedAmount >= transferAmount
-      ) {
-        return true;
-      } else {
-        return false;
+        if (
+          Number(quantity) > 0 &&
+          nftBalance + Number(quantity) <= maxPerWallet &&
+          approvedAmount >= transferAmount
+        ) {
+          return true;
+        } else {
+          return false;
+        }
       }
+      return false;
     };
-
-    setMintAuthorized(isMintAuthorized());
-  }, [approvedAmount, transferAmount, quantity, nftBalance, maxPerWallet]);
-
-  useEffect(() => {
-    if (mintAuthorized === true && approvalSuccess) {
-      mint?.();
-    }
-  }, [mintAuthorized, approvalSuccess]);
+    setReadyToMint(isMintAuthorized());
+  }, [
+    approvedAmount,
+    transferAmount,
+    quantity,
+    nftBalance,
+    maxPerWallet,
+    isNftReadSuccess,
+    isTokenReadSuccess,
+  ]);
 
   // update transfer amount
   useEffect(() => {
-    if (Number(quantity) > 0)
-      setTransferAmount(
-        parseUnits(
-          `${Number(quantity) * NFT_FEE}`,
-          Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS),
-        ),
-      );
+    if (Number(quantity) > 0) {
+      const decimals = Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS);
+      const amount = parseUnits(`${Number(quantity) * NFT_FEE}`, decimals);
+      setTransferAmount(amount);
+    }
   }, [quantity]);
 
   // update mint status
   useEffect(() => {
-    if (batchLimit === undefined || batchLimit === 0) setMintEnabled(false);
-    else setMintEnabled(true);
-  }, [batchLimit]);
+    if (batchLimit != undefined) {
+      if (batchLimit === 0) setMintStarted(false);
+      else setMintStarted(true);
+    }
+  }, [batchLimit, isNftReadSuccess]);
 
   // update isufficient funds
   useEffect(() => {
-    if (tokenBalance != undefined && tokenBalance < transferAmount)
+    if (tokenBalance === undefined) {
       setInsufficientFunds(true);
-    else setInsufficientFunds(false);
-  }, [tokenBalance, transferAmount]);
+    } else {
+      if (tokenBalance < transferAmount) setInsufficientFunds(true);
+      else setInsufficientFunds(false);
+    }
+  }, [tokenBalance, transferAmount, isTokenReadSuccess]);
 
   // update max per wallet exceeded
   useEffect(() => {
-    if (
-      nftBalance != undefined &&
-      maxPerWallet != undefined &&
-      nftBalance + Number(quantity) > maxPerWallet
-    )
-      setMaxPerWalletExceeded(true);
-    else setMaxPerWalletExceeded(false);
-  }, [nftBalance, quantity, maxPerWallet]);
+    if (nftBalance == undefined || maxPerWallet == undefined) {
+      setMaxExceeded(true);
+    } else {
+      if (nftBalance + Number(quantity) > maxPerWallet) setMaxExceeded(true);
+      else setMaxExceeded(false);
+    }
+  }, [nftBalance, quantity, maxPerWallet, isNftReadSuccess]);
 
-  // update max per wallet exceeded
+  // update button enabled
   useEffect(() => {
-    if (
-      approvalLoading ||
-      isMintLoading ||
-      (!mintAuthorized && !approve) ||
-      (mintAuthorized && !mint)
-    )
-      setButtonEnabled(false);
-    else setButtonEnabled(true);
-  }, [approvalLoading, isMintLoading, mintAuthorized]);
+    const isButtonEnabled = () => {
+      if (readyToMint) {
+        if (isApprovalLoading || isMintLoading || !mint) {
+          return false;
+        } else {
+          return true;
+        }
+      } else {
+        if (!approve) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+    };
+
+    setButtonEnabled(isButtonEnabled());
+  }, [
+    isApprovalLoading,
+    isMintLoading,
+    readyToMint,
+    isTokenReadSuccess,
+    isNftReadSuccess,
+  ]);
 
   // ============================================================================
   // display elements
@@ -263,6 +330,16 @@ export default function Minter({}: Props) {
     return quantity;
   };
 
+  let [isOpen, setIsOpen] = useState(false);
+
+  function closeModal() {
+    setIsOpen(false);
+  }
+
+  function openModal() {
+    setIsOpen(true);
+  }
+
   return (
     <>
       <div className="mx-auto h-full w-full max-w-sm flex-col justify-between rounded-lg bg-black p-8 shadow-inner-sym md:max-w-none">
@@ -274,10 +351,10 @@ export default function Minter({}: Props) {
         <MintMessage
           isMintLoading={isMintLoading}
           isMintSuccess={isMintSuccess}
-          isApprovalLoading={approvalLoading}
+          isApprovalLoading={isApprovalLoading}
         ></MintMessage>
 
-        {mintEnabled ? (
+        {mintStarted ? (
           <div className="pt-2">
             <div className="my-4 justify-center text-center">
               <MintInputPanel
@@ -290,12 +367,14 @@ export default function Minter({}: Props) {
             <div className="mt-2 flex justify-center">
               <MintButton
                 insufficientFunds={insufficientFunds}
-                maxPerWalletExceeded={maxPerWalletExceeded}
+                maxExceeded={maxExceeded}
                 maxPerWallet={maxPerWallet}
-                mintAuthorized={mintAuthorized}
+                readyToMint={readyToMint}
                 buttonEnabled={buttonEnabled}
                 approve={approve}
                 mint={mint}
+                openPopUp={openModal}
+                closePopUp={closeModal}
               ></MintButton>
             </div>
           </div>
@@ -313,6 +392,17 @@ export default function Minter({}: Props) {
             </div>
           </div>
         )}
+        <PopUp
+          isOpen={isOpen}
+          openModal={openModal}
+          closeModal={closeModal}
+          mint={mint}
+          approve={approve}
+          readyToMint={readyToMint ? readyToMint : false}
+          isApproving={isApprovalLoading && !isApprovalSuccess}
+          isMinting={isMintLoading && !isMintSuccess}
+          quantity={quantity}
+        ></PopUp>
       </div>
     </>
   );
