@@ -1,9 +1,9 @@
 "use client";
-import { nftABI } from "@/assets/nftABI";
-import { tokenABI } from "@/assets/tokenABI";
-import React, { useEffect, useState } from "react";
+import {nftABI} from "@/assets/nftABI";
+import {tokenABI} from "@/assets/tokenABI";
+import React, {useEffect, useState} from "react";
 
-import { parseUnits } from "viem";
+import {parseUnits} from "viem";
 import {
   useAccount,
   useContractReads,
@@ -19,8 +19,8 @@ import MintInputPanel from "./mintInputPanel";
 import MintButton from "./mintButton";
 import PopUp from "./popUp";
 
-const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
-const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${string}`;
+const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${ string }`;
+const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${ string }`;
 const NFT_FEE = 100000;
 
 type Props = {};
@@ -58,10 +58,10 @@ export default function Minter({}: Props) {
   const [soldOut, setSoldOut] = useState<boolean>(false);
 
   // get account address
-  const { address, isConnecting, isDisconnected, isConnected } = useAccount({});
+  const {address, isConnecting, isDisconnected, isConnected} = useAccount({});
 
   // get chain
-  const { chain } = useNetwork();
+  const {chain} = useNetwork();
 
   // define token contract config
   const tokenContract = {
@@ -88,12 +88,12 @@ export default function Minter({}: Props) {
       {
         ...tokenContract,
         functionName: "balanceOf",
-        args: [address as `0x${string}`],
+        args: [address as `0x${ string }`],
       },
       {
         ...tokenContract,
         functionName: "allowance",
-        args: [address as `0x${string}`, NFT_CONTRACT],
+        args: [address as `0x${ string }`, NFT_CONTRACT],
       },
     ],
     enabled: isConnected && address != null,
@@ -112,7 +112,7 @@ export default function Minter({}: Props) {
       {
         ...nftContract,
         functionName: "balanceOf",
-        args: [address as `0x${string}`],
+        args: [address as `0x${ string }`],
       },
       {
         ...nftContract,
@@ -155,8 +155,8 @@ export default function Minter({}: Props) {
   // =========================================================
 
   // approving funds
-  const { config: approvalConfig } = usePrepareContractWrite({
-    address: TOKEN_CONTRACT as `0x${string}`,
+  const {config: approvalConfig} = usePrepareContractWrite({
+    address: TOKEN_CONTRACT as `0x${ string }`,
     abi: tokenABI,
     functionName: "approve",
     args: [NFT_CONTRACT, transferAmount],
@@ -169,14 +169,14 @@ export default function Minter({}: Props) {
     isError: approvalError,
   } = useContractWrite(approvalConfig);
 
-  const { isLoading: isApprovalLoading, isSuccess: isApprovalSuccess } =
+  const {isLoading: isApprovalLoading, isSuccess: isApprovalSuccess} =
     useWaitForTransaction({
       confirmations: 1,
       hash: approvedData?.hash,
     });
 
   // mint nfts
-  const { config: mintConfig } = usePrepareContractWrite({
+  const {config: mintConfig} = usePrepareContractWrite({
     ...nftContract,
     functionName: "mint",
     args: [BigInt(quantity)],
@@ -189,7 +189,7 @@ export default function Minter({}: Props) {
     isError: mintError,
   } = useContractWrite(mintConfig);
 
-  const { isLoading: isMintLoading, isSuccess: isMintSuccess } =
+  const {isLoading: isMintLoading, isSuccess: isMintSuccess} =
     useWaitForTransaction({
       confirmations: 1,
       hash: mintData?.hash,
@@ -259,7 +259,7 @@ export default function Minter({}: Props) {
   useEffect(() => {
     if (Number(quantity) > 0) {
       const decimals = Number(process.env.NEXT_PUBLIC_TOKEN_DECIMALS);
-      const amount = parseUnits(`${Number(quantity) * NFT_FEE}`, decimals);
+      const amount = parseUnits(`${ Number(quantity) * NFT_FEE }`, decimals);
       setTransferAmount(amount);
     }
   }, [quantity]);
@@ -342,7 +342,7 @@ export default function Minter({}: Props) {
 
   return (
     <>
-      <div className="mx-auto h-full w-full max-w-sm flex-col justify-between rounded-lg bg-black p-8 shadow-inner-sym md:max-w-none">
+      <div className="mx-auto h-full w-full max-w-sm flex-col justify-between rounded-lg bg-black/80 backdrop-blur p-8 shadow-inner-sym md:max-w-none">
         <MintAnimation
           isMintLoading={isMintLoading}
           isMintSuccess={isMintSuccess}
@@ -380,14 +380,14 @@ export default function Minter({}: Props) {
           </div>
         ) : (
           <div className="flex-col justify-center gap-4 text-center">
-            <p className="my-8">MINT STARTS ON DEC 23TH, 1PM CST</p>
+            <p className="my-8">MINT IS LIVE!</p>
             <div className="mx-auto my-2 flex h-12 w-fit rounded-xl border-2 border-black bg-primary px-4 align-middle font-bold text-black hover:border-primary hover:bg-hover">
               <a
                 className="m-auto"
                 href="https://app.uniswap.org/swap?outputCurrency=0x0b61C4f33BCdEF83359ab97673Cb5961c6435F4E"
                 target={"_blank"}
               >
-                <p>{`BUY $${process.env.NEXT_PUBLIC_TOKEN_SYMBOL}`}</p>
+                <p>{`BUY $${ process.env.NEXT_PUBLIC_TOKEN_SYMBOL }`}</p>
               </a>
             </div>
           </div>

@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useContractRead, useNetwork } from "wagmi";
-import { nftABI } from "@/assets/nftABI";
-const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
+import React, {useEffect, useState} from "react";
+import {useContractRead, useNetwork} from "wagmi";
+import {nftABI} from "@/assets/nftABI";
+const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${ string }`;
 const COLLECTION_NAME = "Flamelings Collection";
 type Props = {};
 
@@ -10,7 +10,7 @@ export default function CollectionInfo({}: Props) {
   const [totalSupply, setTotalSupply] = useState<number | undefined>(undefined);
 
   // get chain
-  const { chain } = useNetwork();
+  const {chain} = useNetwork();
 
   // define token contract config
   const nftContract = {
@@ -20,7 +20,7 @@ export default function CollectionInfo({}: Props) {
   };
 
   // read current limits
-  const { data, isSuccess, isError, isLoading } = useContractRead({
+  const {data, isSuccess, isError, isLoading} = useContractRead({
     ...nftContract,
     functionName: "totalSupply",
     watch: true,
@@ -38,7 +38,7 @@ export default function CollectionInfo({}: Props) {
     if (isLoading) {
       text = "Loading...";
     } else if (isSuccess && totalSupply != undefined) {
-      text = `${totalSupply.toLocaleString()}`;
+      text = `${ totalSupply.toLocaleString() }`;
     } else {
       text = "---";
     }
@@ -50,7 +50,7 @@ export default function CollectionInfo({}: Props) {
     if (isLoading) {
       text = "Loading...";
     } else if (isSuccess && totalSupply != undefined) {
-      text = `${(1000 - totalSupply).toLocaleString()}`;
+      text = `${ (1000 - totalSupply).toLocaleString() }`;
     } else {
       text = "---";
     }
@@ -59,7 +59,7 @@ export default function CollectionInfo({}: Props) {
 
   return (
     <div className="mx-auto w-full pb-8">
-      <div className="mx-auto max-w-sm rounded-md bg-black p-8  shadow-inner-sym md:max-w-none">
+      <div className="mx-auto max-w-sm rounded-md bg-black/80 backdrop-blur p-8  shadow-inner-sym md:max-w-none">
         <h2 className="mb-4 border-b-2 border-primary pb-2 text-xl uppercase">
           {COLLECTION_NAME}
         </h2>
@@ -67,7 +67,7 @@ export default function CollectionInfo({}: Props) {
           <p>Contract:</p>
 
           <a
-            href={`${process.env.NEXT_PUBLIC_NETWORK_SCAN}/address/${NFT_CONTRACT}#code`}
+            href={`${ process.env.NEXT_PUBLIC_NETWORK_SCAN }/address/${ NFT_CONTRACT }#code`}
           >
             <div className="mt-1 overflow-hidden text-ellipsis text-xs text-opacity-60 hover:text-hover">
               {NFT_CONTRACT}
@@ -95,23 +95,20 @@ export default function CollectionInfo({}: Props) {
               <tr>
                 <td>YELLOW</td>
                 <td>8 %</td>
-                <td>{`100${String.fromCharCode(8239)}K ${
-                  process.env.NEXT_PUBLIC_TOKEN_SYMBOL
-                }`}</td>
+                <td>{`100${ String.fromCharCode(8239) }K ${ process.env.NEXT_PUBLIC_TOKEN_SYMBOL
+                  }`}</td>
               </tr>
               <tr>
                 <td>RED</td>
                 <td>2 %</td>
-                <td>{`1${String.fromCharCode(8239)}M ${
-                  process.env.NEXT_PUBLIC_TOKEN_SYMBOL
-                }`}</td>
+                <td>{`1${ String.fromCharCode(8239) }M ${ process.env.NEXT_PUBLIC_TOKEN_SYMBOL
+                  }`}</td>
               </tr>
               <tr>
                 <td>NOVA</td>
                 <td>1 %</td>
-                <td>{`1.5${String.fromCharCode(8239)}M ${
-                  process.env.NEXT_PUBLIC_TOKEN_SYMBOL
-                }`}</td>
+                <td>{`1.5${ String.fromCharCode(8239) }M ${ process.env.NEXT_PUBLIC_TOKEN_SYMBOL
+                  }`}</td>
               </tr>
             </tbody>
           </table>

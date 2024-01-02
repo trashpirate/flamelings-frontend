@@ -1,20 +1,20 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import {
   useAccount,
   useContractEvent,
   useContractReads,
   useNetwork,
 } from "wagmi";
-import { nftABI } from "@/assets/nftABI";
-import { tokenABI } from "@/assets/tokenABI";
+import {nftABI} from "@/assets/nftABI";
+import {tokenABI} from "@/assets/tokenABI";
 import Image from "next/image";
 import Moralis from "moralis";
 import Link from "next/link";
-import { toHex } from "viem";
+import {toHex} from "viem";
 
-const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
-const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${string}`;
+const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${ string }`;
+const TOKEN_CONTRACT = process.env.NEXT_PUBLIC_TOKEN_CONTRACT as `0x${ string }`;
 
 interface NFTMeta {
   name: string;
@@ -25,7 +25,7 @@ interface NFTMeta {
 async function getNFT(
   chainId: string,
   maxPerWallet: number,
-  address: `0x${string}`,
+  address: `0x${ string }`,
 ) {
   const response = await Moralis.EvmApi.nft.getWalletNFTs({
     chain: chainId,
@@ -47,11 +47,11 @@ async function getNFT(
       let imageURL: string = "/unrevealed.jpg";
 
       const res = await fetch(
-        `https://bafybeic2a7jdsztni6jsnq2oarb3o5g7iuya5r4lcjfqi64rsucirdfobm.ipfs.nftstorage.link/${nft.tokenId}`,
+        `https://bafybeic2a7jdsztni6jsnq2oarb3o5g7iuya5r4lcjfqi64rsucirdfobm.ipfs.nftstorage.link/${ nft.tokenId }`,
       );
       const json = await res.json();
       const [prefix, separator, url, color, name] = json.image.split("/");
-      imageURL = `https://bafybeiaf6ppnztlf3k5edqrgq3zae5ih2y6vhf255hekkqn6vjwazhq36q.ipfs.nftstorage.link/${color}/${name}`;
+      imageURL = `https://bafybeiaf6ppnztlf3k5edqrgq3zae5ih2y6vhf255hekkqn6vjwazhq36q.ipfs.nftstorage.link/${ color }/${ name }`;
 
       let iNft: NFTMeta = {
         name: nft.name + " #" + nft.tokenId,
@@ -82,10 +82,10 @@ export default function Nfts({}: Props) {
   const [nftsOwned, setNftsOwned] = useState<NFTMeta[] | undefined>(undefined);
 
   // get account address
-  const { address, isConnecting, isDisconnected, isConnected } = useAccount({});
+  const {address, isConnecting, isDisconnected, isConnected} = useAccount({});
 
   // get chain
-  const { chain } = useNetwork();
+  const {chain} = useNetwork();
 
   // define token contract config
   const tokenContract = {
@@ -101,7 +101,7 @@ export default function Nfts({}: Props) {
     chainId: chain?.id,
   };
 
-  const { data, isSuccess, refetch } = useContractReads({
+  const {data, isSuccess, refetch} = useContractReads({
     contracts: [
       {
         ...nftContract,
@@ -110,7 +110,7 @@ export default function Nfts({}: Props) {
       {
         ...nftContract,
         functionName: "balanceOf",
-        args: [address as `0x${string}`],
+        args: [address as `0x${ string }`],
       },
     ],
     enabled: isConnected && address != null,
@@ -163,7 +163,7 @@ export default function Nfts({}: Props) {
 
   return (
     <div className="h-full w-full pb-8">
-      <div className="mx-auto h-full max-w-sm rounded-md bg-black p-8 shadow-inner-sym sm:w-full md:max-w-none">
+      <div className="mx-auto h-full max-w-sm rounded-md bg-black/80 backdrop-blur p-8 shadow-inner-sym sm:w-full md:max-w-none">
         <h2 className="border-b-2 border-primary pb-2 text-justify text-xl uppercase">
           Your NFTs (Max. 10)
         </h2>
@@ -176,7 +176,7 @@ export default function Nfts({}: Props) {
                 return (
                   <Link
                     key={nft.id}
-                    href={`${process.env.NEXT_PUBLIC_NETWORK_SCAN}/nft/${NFT_CONTRACT}/${nft.id}`}
+                    href={`${ process.env.NEXT_PUBLIC_NETWORK_SCAN }/nft/${ NFT_CONTRACT }/${ nft.id }`}
                   >
                     <div
                       className={
@@ -187,7 +187,7 @@ export default function Nfts({}: Props) {
                       {
                         <Image
                           alt={nft.name || ""}
-                          src={`${nft.path}` as string}
+                          src={`${ nft.path }` as string}
                           width={100}
                           height={100}
                           style={{
