@@ -59,7 +59,7 @@ export default function CollectionInfo({}: Props) {
 
   return (
     <div className="mx-auto w-full pb-8">
-      <div className="mx-auto max-w-sm rounded-md bg-black/80 backdrop-blur p-8  shadow-inner-sym md:max-w-none">
+      <div className="mx-auto max-w-sm rounded-md bg-black/80 backdrop-blur p-8  md:max-w-none">
         <h2 className="mb-4 border-b-2 border-primary pb-2 text-xl uppercase">
           {COLLECTION_NAME}
         </h2>
