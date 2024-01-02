@@ -140,7 +140,7 @@ export default function Nfts({}: Props) {
 
   return (
     <div className="h-full w-full pb-8">
-      <div className="mx-auto h-full max-w-sm rounded-md bg-black/80 backdrop-blur p-8 shadow-inner-sym sm:w-full md:max-w-none">
+      <div className="mx-auto h-full max-w-sm rounded-md bg-black/80 backdrop-blur p-8 sm:w-full md:max-w-none">
         <h2 className="border-b-2 border-primary pb-2 text-justify text-xl uppercase">
           {`Your NFTs (Max. ${ maxPerWallet })`}
         </h2>

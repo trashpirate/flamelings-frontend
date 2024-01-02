@@ -338,7 +338,7 @@ export default function Minter({}: Props) {
 
   return (
     <>
-      <div className="mx-auto h-full w-full max-w-sm flex-col justify-between rounded-lg bg-black/80 backdrop-blur p-8 shadow-inner-sym md:max-w-none">
+      <div className="mx-auto h-full w-full max-w-sm flex-col justify-between rounded-lg bg-black/80 backdrop-blur p-8 md:max-w-none">
         <MintAnimation
           isMintLoading={isMintLoading}
           isMintSuccess={isMintSuccess}
