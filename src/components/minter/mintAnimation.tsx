@@ -39,11 +39,9 @@ export default function MintAnimation({
       />
       <div className="m-4">
         <div className="m-1 font-bold text-black">{"Flamelings"}</div>
-        <div className="m-1 text-black">{`${
-          NFT_FEE / 1000
-        }${String.fromCharCode(8239)}K $${
-          process.env.NEXT_PUBLIC_TOKEN_SYMBOL
-        } PER NFT`}</div>
+        <div className="m-1 text-black">{`${NFT_FEE / 1000
+          }${String.fromCharCode(8239)}K $${process.env.NEXT_PUBLIC_TOKEN_SYMBOL
+          } PER NFT`}</div>
       </div>
     </div>
   );
