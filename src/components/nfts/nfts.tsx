@@ -102,7 +102,7 @@ export default function Nfts({ }: Props) {
     for (let index = 1; index <= maxShow; index++) {
       const nft = nfts["ownedNfts"].at(-index);
       if (nft != undefined) {
-        let imageURL: string = "/unrevealed.jpg";
+        let imageURL: string = "/unrevealed_2.jpg";
 
         const res = await fetch(
           `https://bafybeic2a7jdsztni6jsnq2oarb3o5g7iuya5r4lcjfqi64rsucirdfobm.ipfs.nftstorage.link/${nft.tokenId}`,
@@ -123,7 +123,7 @@ export default function Nfts({ }: Props) {
         let iNft: NFTMeta = {
           name: "Flameling #?",
           id: index + 1100,
-          path: "/unrevealed.jpg",
+          path: "/unrevealed_2.jpg",
         };
         nftArray.push(iNft);
       }
