@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       backgroundImage: {
-        "hero-pattern": "url('/background_1.jpg')",
+        "hero-pattern": "url('/background_1_dark.jpg')",
       },
       fontFamily: {
         body: ["Nunito Sans"],
