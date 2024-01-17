@@ -7,7 +7,7 @@ import About from "@/components/about/about";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col justify-items-stretch bg-hero-pattern bg-scroll py-8 text-white bg-blend-darken">
+    <main className="flex min-h-screen flex-col justify-items-stretch bg-hero-pattern bg-scroll p-8 text-white bg-blend-darken">
       <div className="mx-auto h-full w-full flex-col items-center justify-between xl:w-5/6">
         <Navbar></Navbar>
         {/* <h1 className="my-8 h-10 text-center text-xl font-bold uppercase drop-shadow-text xs:text-2xl md:text-3xl"></h1> */}
