@@ -1,16 +1,16 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useContractRead, useNetwork } from "wagmi";
-import { nftABI } from "@/assets/nftABI";
-const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
+import React, {useEffect, useState} from "react";
+import {useContractRead, useNetwork} from "wagmi";
+import {nftABI} from "@/assets/nftABI";
+const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${ string }`;
 const COLLECTION_NAME = "Flamelings Collection";
 type Props = {};
 
-export default function CollectionInfo({ }: Props) {
+export default function CollectionInfo({}: Props) {
   const [totalSupply, setTotalSupply] = useState<number | undefined>(undefined);
 
   // get chain
-  const { chain } = useNetwork();
+  const {chain} = useNetwork();
 
   // define token contract config
   const nftContract = {
@@ -20,7 +20,7 @@ export default function CollectionInfo({ }: Props) {
   };
 
   // read current limits
-  const { data, isSuccess, isError, isLoading } = useContractRead({
+  const {data, isSuccess, isError, isLoading} = useContractRead({
     ...nftContract,
     functionName: "totalSupply",
     watch: true,
@@ -38,7 +38,7 @@ export default function CollectionInfo({ }: Props) {
     if (isLoading) {
       text = "Loading...";
     } else if (isSuccess && totalSupply != undefined) {
-      text = `${totalSupply.toLocaleString()}`;
+      text = `${ (totalSupply - 1).toLocaleString() }`;
     } else {
       text = "---";
     }
@@ -50,7 +50,7 @@ export default function CollectionInfo({ }: Props) {
     if (isLoading) {
       text = "Loading...";
     } else if (isSuccess && totalSupply != undefined) {
-      text = `${(1000 - totalSupply).toLocaleString()}`;
+      text = `${ (1000 - totalSupply).toLocaleString() }`;
     } else {
       text = "---";
     }
@@ -67,7 +67,7 @@ export default function CollectionInfo({ }: Props) {
           <p>Contract:</p>
 
           <a
-            href={`${process.env.NEXT_PUBLIC_NETWORK_SCAN}/address/${NFT_CONTRACT}#code`}
+            href={`${ process.env.NEXT_PUBLIC_NETWORK_SCAN }/address/${ NFT_CONTRACT }#code`}
           >
             <div className="mt-1 overflow-hidden text-ellipsis text-xs text-opacity-60 hover:text-hover">
               {NFT_CONTRACT}
@@ -95,32 +95,33 @@ export default function CollectionInfo({ }: Props) {
               <tr>
                 <td>YELLOW</td>
                 <td>8 %</td>
-                <td>{`100${String.fromCharCode(8239)}K ${process.env.NEXT_PUBLIC_TOKEN_SYMBOL
+                <td>{`100${ String.fromCharCode(8239) }K ${ process.env.NEXT_PUBLIC_TOKEN_SYMBOL
                   }`}</td>
               </tr>
               <tr>
                 <td>RED</td>
                 <td>2 %</td>
-                <td>{`1${String.fromCharCode(8239)}M ${process.env.NEXT_PUBLIC_TOKEN_SYMBOL
+                <td>{`1${ String.fromCharCode(8239) }M ${ process.env.NEXT_PUBLIC_TOKEN_SYMBOL
                   }`}</td>
               </tr>
               <tr>
                 <td>NOVA</td>
                 <td>1 %</td>
-                <td>{`1.5${String.fromCharCode(8239)}M ${process.env.NEXT_PUBLIC_TOKEN_SYMBOL
+                <td>{`1.5${ String.fromCharCode(8239) }M ${ process.env.NEXT_PUBLIC_TOKEN_SYMBOL
                   }`}</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div className="flex justify-between">
-          <h3>NFTs minted: </h3>
-          <p>{getTotalSupplyString()}</p>
+        <div className="flex justify-between w-48">
+          <h3>Last NFT minted: </h3>
+          <p>#{getTotalSupplyString()}</p>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between w-48">
           <h3>NFTs remaining: </h3>
           <p>{getNftsRemainingString()}</p>
         </div>
+
       </div>
     </div>
   );
