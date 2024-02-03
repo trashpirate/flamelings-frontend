@@ -113,14 +113,15 @@ export default function CollectionInfo({}: Props) {
             </tbody>
           </table>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between w-48">
           <h3>Last NFT minted: </h3>
           <p>#{getTotalSupplyString()}</p>
         </div>
-        <div className="flex justify-between">
+        <div className="flex justify-between w-48">
           <h3>NFTs remaining: </h3>
           <p>{getNftsRemainingString()}</p>
         </div>
+
       </div>
     </div>
   );
