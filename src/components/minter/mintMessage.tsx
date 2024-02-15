@@ -15,7 +15,7 @@ export default function MintMessage({
   if (!isMintLoading && isMintSuccess) message = "Your Flamelings are born!";
   else if (isApprovalLoading) message = "Approving your funds...";
   else if (isMintLoading) message = "Birthing your Flameling...";
-  else message = "Mint an NFT and win a prize!";
+  else message = "Mint an NFT and EARN!";
 
   return (
     <div className="flex h-14 justify-center">
