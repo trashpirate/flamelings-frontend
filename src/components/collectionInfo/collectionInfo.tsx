@@ -80,7 +80,7 @@ export default function CollectionInfo({}: Props) {
               <tr className="text-sm">
                 <th>TRAITS</th>
                 <th>RARITY</th>
-                <th>PRIZE</th>
+                <th>BOUNTY</th>
               </tr>
             </thead>
             <tbody>
