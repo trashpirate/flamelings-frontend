@@ -6,11 +6,11 @@
 ![Nextjs](https://img.shields.io/badge/next-v13.5.4-blue?style=for-the-badge)
 ![Tailwindcss](https://img.shields.io/badge/TailwindCSS-v3.0-blue?style=for-the-badge)
 ![Wagmi](https://img.shields.io/badge/Wagmi-v1.4.3-blue?style=for-the-badge)
-[![License: MIT](https://img.shields.io/github/license/trashpirate/hold-earn.svg?style=for-the-badge)](https://github.com/trashpirate/hold-earn/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/github/license/trashpirate/hold-earn.svg?style=for-the-badge)](https://github.com/trashpirate/flamelings-frontend/blob/master/LICENSE)
 
 [![Website: nadinaoates.com](https://img.shields.io/badge/Portfolio-00e0a7?style=for-the-badge&logo=Website)](https://nadinaoates.com)
 [![LinkedIn: nadinaoates](https://img.shields.io/badge/LinkedIn-0a66c2?style=for-the-badge&logo=LinkedIn&logoColor=f5f5f5)](https://linkedin.com/in/nadinaoates)
-[![Twitter: N0\_crypto](https://img.shields.io/badge/@N0\_crypto-black?style=for-the-badge&logo=X)](https://twitter.com/N0\_crypto)
+[![Twitter: 0xTrashPirate](https://img.shields.io/badge/@0xTrashPirate-black?style=for-the-badge&logo=X)](https://twitter.com/0xTrashPirate)
 
 <!-- TABLE OF CONTENTS -->
 <details>
@@ -51,11 +51,11 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/trashpirate/flamelings-artwork.git
+   git clone https://github.com/trashpirate/flamelings-frontend.git
    ```
 2. Navigate to the project directory
    ```sh
-   cd flamelings-artwork
+   cd flamelings-frontend
    ```
 3. Install NPM packages
    ```sh
@@ -106,7 +106,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Nadina Oates - [@N0_crypto](https://twitter.com/N0_crypto)
+Nadina Oates - [@0xTrashPirate](https://twitter.com/0xTrashPirate)
 
 Main Repository: [https://github.com/trashpirate/flamelings](https://github.com/trashpirate/flamelings)
 
