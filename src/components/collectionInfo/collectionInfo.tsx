@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useContractRead, useNetwork } from "wagmi";
 import { nftABI } from "@/assets/nftABI";
+import Link from "next/link";
 const NFT_CONTRACT = process.env.NEXT_PUBLIC_NFT_CONTRACT as `0x${string}`;
 const COLLECTION_NAME = "Flamelings Collection";
 type Props = {};
@@ -122,6 +123,11 @@ export default function CollectionInfo({ }: Props) {
         <div className="flex justify-between w-48">
           <h3>NFTs remaining: </h3>
           <p>{getNftsRemainingString()}</p>
+        </div>
+        <div>
+          <Link href="https://app.pwn.xyz/collection/mainnet/0x49902747796c2abcc5ea640648551ddbc2c50ba2/assets" target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-xl shadow transform transition-transform duration-200 hover:scale-105 font-bold">NFT Lending</Link>
         </div>
 
       </div>
